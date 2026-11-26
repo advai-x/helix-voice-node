@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * Helix Voice API
- * Versioned developer speech API and anonymous product preview.
+ * Versioned developer speech API for authenticated accounts.
  *
  * The version of the OpenAPI document: 1.0.0
  * 

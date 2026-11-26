@@ -39,11 +39,6 @@ export interface TranscriptionInput {
     language?: "zh-CN" | "auto";
 }
 
-export interface PreviewResult {
-    audio: Uint8Array;
-    cache?: string;
-}
-
 export class HelixVoiceError extends Error {
     constructor(message: string, readonly status: number, readonly code?: string,
         readonly requestId?: string, readonly retryAfter?: string) {
@@ -92,7 +87,7 @@ class Transport {
     private readonly url: string;
     private readonly timeoutMs: number;
 
-    constructor(options: ClientOptions, private readonly key?: string) {
+    constructor(options: ClientOptions, private readonly key: string) {
         const url = new URL(options.baseUrl ?? HELIXVOICE_BASE_URL);
         if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash) {
             throw new TypeError("baseUrl must be an HTTP(S) base URL");
@@ -105,8 +100,7 @@ class Transport {
     }
 
     private async send(method: string, route: string, accept: string, body?: string | FormData) {
-        const headers = new Headers({ Accept: accept });
-        if (this.key) headers.set("Authorization", "Bearer " + this.key);
+        const headers = new Headers({ Accept: accept, Authorization: "Bearer " + this.key });
         if (typeof body === "string") headers.set("Content-Type", "application/json");
         const response = await fetch(this.url + route, {
             method, headers, body, redirect: "manual", signal: AbortSignal.timeout(this.timeoutMs),
@@ -153,17 +147,14 @@ class Transport {
         throw this.error(response, "Unexpected Helix Voice JSON response");
     }
 
-    async wav(method: string, route: string, body?: string): Promise<PreviewResult> {
-        const response = await this.send(method, route, "audio/wav", body);
+    async wav(route: string): Promise<Uint8Array> {
+        const response = await this.send("GET", route, "audio/wav");
         if (this.contentType(response) !== "audio/wav") {
             await response.body?.cancel();
             throw this.error(response, "Expected a WAV response");
         }
         try {
-            return {
-                audio: await readBytes(response, MAX_WAV),
-                cache: response.headers.get("X-TTS-Preview-Cache") ?? undefined,
-            };
+            return await readBytes(response, MAX_WAV);
         } catch (error) {
             if (!(error instanceof RangeError)) throw error;
             throw this.error(response, "WAV exceeds the SDK response size limit");
@@ -262,7 +253,7 @@ export class HelixVoiceClient {
         };
         this.generations = {
             list: () => http.json("GET", "/v1/generations", decodeList(GenerationFromJSON)),
-            download: async (id) => (await http.wav("GET", "/v1/generations/" + segment(id) + "/audio")).audio,
+            download: async (id) => http.wav("/v1/generations/" + segment(id) + "/audio"),
             delete: (id) => http.remove("/v1/generations/" + segment(id)),
         };
         const generate = ({ input, voice }: SpeechInput) =>
@@ -284,17 +275,5 @@ export class HelixVoiceClient {
             create: async ({ file, language }) => http.json("POST", "/v1/audio/transcriptions", TranscriptionFromJSON,
                 await upload(file, language === undefined ? {} : { language })),
         };
-    }
-}
-
-export class HelixVoicePreviewClient {
-    private readonly http: Transport;
-
-    constructor(options: ClientOptions = {}) {
-        this.http = new Transport(options);
-    }
-
-    generate({ input, voice }: { input: string; voice?: string }): Promise<PreviewResult> {
-        return this.http.wav("POST", "/v1/audio/preview", JSON.stringify({ input, voice }));
     }
 }

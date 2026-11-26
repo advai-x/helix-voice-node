@@ -1,0 +1,7 @@
+{
+  "name": "helix-voice-node-examples",
+  "private": true,
+  "dependencies": {
+    "@advai-x/helix-voice": "0.1.0"
+  }
+}
