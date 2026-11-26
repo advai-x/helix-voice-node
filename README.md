@@ -1,6 +1,22 @@
-# Helix Voice SDK for Node.js and TypeScript
+<p align="center">
+  <img src="https://docs.helixvoice.net/helix-voice-touch-icon.png" alt="Helix Voice" width="64">
+</p>
 
-Use the Helix Voice developer API to generate speech, transcribe audio, and manage voices from a Node.js service.
+<h1 align="center">Helix Voice SDK for Node.js and TypeScript</h1>
+
+<p align="center">
+  Generate speech, transcribe audio, and manage voices from your Node.js application.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@advai-x/helix-voice"><img src="https://img.shields.io/npm/v/@advai-x/helix-voice" alt="npm version"></a>
+</p>
+
+<p align="center">
+  <a href="https://docs.helixvoice.net/">Developer Docs</a> ·
+  <a href="examples/">Examples</a> ·
+  <a href="https://www.npmjs.com/package/@advai-x/helix-voice?activeTab=versions">Version History</a>
+</p>
 
 ## Install
 
@@ -12,18 +28,33 @@ npm install @advai-x/helix-voice@0.2.0
 
 ## Quickstart
 
-From a checkout of this repository, install the examples' dependency.
-
-```sh
-npm --prefix examples install
-```
+Set `HELIXVOICE_API_KEY` to a server-side API key with `voices:read`, `speech:write`, and `generations:read` scopes.
 
 ```sh
 export HELIXVOICE_API_KEY='YOUR_API_KEY'
-node examples/speech.mjs
 ```
 
-The [speech example](examples/speech.mjs) chooses the first available voice returned by `client.voices.list()`, calls `client.speech.save()`, and writes `speech.wav`. It prints the voice and generation IDs.
+Save this as `speech.mjs` in your project and run `node speech.mjs`.
+
+```js
+import { HelixVoiceClient } from "@advai-x/helix-voice";
+
+const client = new HelixVoiceClient({ baseUrl: process.env.HELIXVOICE_BASE_URL });
+const voices = await client.voices.list();
+if (voices.length === 0) {
+    throw new Error("No voices are available to this account.");
+}
+
+const generation = await client.speech.save({
+    input: "Hello from Helix Voice.",
+    voice: voices[0].id,
+    output: "speech.wav",
+});
+
+console.log(`Saved speech.wav (generation ${generation.id})`);
+```
+
+On success, `speech.wav` is saved in your current directory and the generation ID is printed. See also the [repository example](examples/speech.mjs).
 
 ## API keys and account access
 
