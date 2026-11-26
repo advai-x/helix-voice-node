@@ -1,0 +1,30 @@
+{
+  "name": "@advai-x/helix-voice",
+  "version": "0.1.0",
+  "description": "Helix Voice server SDK for Node.js",
+  "author": "Helix Voice",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/advai-x/helix-voice-node.git"
+  },
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "typescript": "5.9.3"
+  },
+  "license": "UNLICENSED",
+  "homepage": "https://docs.helixvoice.net",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}
