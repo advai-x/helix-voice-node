@@ -7,7 +7,7 @@ Use the Helix Voice developer API to generate speech, transcribe audio, and mana
 Requires Node.js 20 or later. The package includes TypeScript declarations and supports ES module imports and CommonJS.
 
 ```sh
-npm install @advai-x/helix-voice@0.1.0
+npm install @advai-x/helix-voice@0.2.0
 ```
 
 ## Quickstart
